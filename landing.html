@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get Your Knowledge Sphere — Vrrrt!</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #0a0a0a;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: #141414;
+    border: 1px solid #222;
+    border-radius: 16px;
+    padding: 48px 40px;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+  }
+  .badge {
+    display: inline-block;
+    background: #00AFAD22;
+    color: #00AFAD;
+    border: 1px solid #00AFAD44;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  h1 span { color: #00AFAD; }
+  p.sub {
+    color: #888;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+  .form-group {
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  input {
+    width: 100%;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: #fff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: #00AFAD; }
+  input::placeholder { color: #444; }
+  button {
+    width: 100%;
+    background: #00AFAD;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+  }
+  button:hover { background: #00C8C6; }
+  button:active { transform: scale(0.99); }
+  button:disabled { background: #333; color: #666; cursor: not-allowed; }
+  .status {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: none;
+  }
+  .status.success { background: #00AFAD22; color: #00AFAD; border: 1px solid #00AFAD44; display: block; }
+  .status.error   { background: #ff444422; color: #ff6666; border: 1px solid #ff444444; display: block; }
+  .examples {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #222;
+  }
+  .examples p { font-size: 12px; color: #555; margin-bottom: 12px; }
+  .example-links { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .example-links a {
+    color: #555;
+    font-size: 11px;
+    text-decoration: none;
+    border: 1px solid #222;
+    border-radius: 4px;
+    padding: 4px 10px;
+  }
+  .example-links a:hover { color: #00AFAD; border-color: #00AFAD44; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">✨ FREE DEMO</div>
+  <h1>Your company as a<br><span>Knowledge Sphere</span></h1>
+  <p class="sub">Drop your website URL below. We'll build an interactive 3D knowledge sphere for your brand — live in about 2 minutes.</p>
+
+  <div class="form-group">
+    <label>Your website URL</label>
+    <input type="url" id="url" placeholder="https://yourcompany.co.za" />
+  </div>
+  <div class="form-group">
+    <label>Your email</label>
+    <input type="email" id="email" placeholder="you@yourcompany.com" />
+  </div>
+
+  <button id="btn" onclick="submit()">🚀 Build My Sphere</button>
+
+  <div id="status" class="status"></div>
+
+  <div class="examples">
+    <p>See live examples:</p>
+    <div class="example-links">
+      <a href="https://vrrrtsite-demos.github.io/attooh-sphere/" target="_blank">attooh!</a>
+      <a href="https://vrrrtsite-demos.github.io/sanlam-sphere/" target="_blank">Sanlam</a>
+      <a href="https://vrrrtsite-demos.github.io/sam-sphere/" target="_blank">Smart About Money</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const WORKER_URL = "WORKER_URL_PLACEHOLDER";
+
+async function submit() {
+  const url   = document.getElementById("url").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const btn   = document.getElementById("btn");
+  const status= document.getElementById("status");
+
+  if (!url || !email) {
+    showStatus("Please enter both a URL and email address.", "error");
+    return;
+  }
+  if (!url.startsWith("http")) {
+    showStatus("Please include https:// in your URL.", "error");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "⏳ Building your sphere...";
+  status.className = "status";
+  status.style.display = "none";
+
+  try {
+    const resp = await fetch(WORKER_URL + "/build", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url, email })
+    });
+    const data = await resp.json();
+
+    if (resp.ok) {
+      showStatus("✅ Building your sphere now! Check your email in about 2 minutes.", "success");
+      btn.textContent = "✅ Submitted!";
+    } else {
+      showStatus("Error: " + (data.error || "Something went wrong"), "error");
+      btn.disabled = false;
+      btn.textContent = "🚀 Build My Sphere";
+    }
+  } catch(e) {
+    showStatus("Network error — please try again.", "error");
+    btn.disabled = false;
+    btn.textContent = "🚀 Build My Sphere";
+  }
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.className = "status " + type;
+}
+
+document.getElementById("url").addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+document.getElementById("email").addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
+</script>
+</body>
+</html>
